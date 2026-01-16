@@ -1,92 +1,71 @@
-// Mobile Navigation and Functionality
+// Mobile Navigation
 document.addEventListener('DOMContentLoaded', function() {
-    // ========== МОБИЛЬНОЕ МЕНЮ ==========
     const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
     const navList = document.querySelector('.nav-list');
     const body = document.body;
     const header = document.querySelector('.header');
-    
-    // Создаем подложку для мобильного меню
-    const mobileOverlay = document.createElement('div');
-    mobileOverlay.className = 'mobile-menu-overlay';
-    document.body.appendChild(mobileOverlay);
 
-    // Функция открытия/закрытия мобильного меню
-    function toggleMobileMenu() {
-        const isActive = navList.classList.contains('active');
-        
-        if (!isActive) {
-            // Открываем меню
-            navList.classList.add('active');
-            mobileMenuBtn.classList.add('active');
-            mobileOverlay.classList.add('active');
-            body.classList.add('no-scroll');
-            
-            // Меняем иконку
-            const icon = mobileMenuBtn.querySelector('i');
-            icon.classList.remove('fa-bars');
-            icon.classList.add('fa-times');
-            
-            // Фиксируем хедер
-            header.style.backgroundColor = 'rgba(255, 255, 255, 0.98)';
-        } else {
-            // Закрываем меню
-            closeMobileMenu();
-        }
-    }
-
-    // Функция закрытия мобильного меню
-    function closeMobileMenu() {
-        navList.classList.remove('active');
-        mobileMenuBtn.classList.remove('active');
-        mobileOverlay.classList.remove('active');
-        body.classList.remove('no-scroll');
-        
-        // Возвращаем иконку
-        const icon = mobileMenuBtn.querySelector('i');
-        icon.classList.remove('fa-times');
-        icon.classList.add('fa-bars');
-    }
-
-    // Обработчик кнопки мобильного меню
+    // Toggle mobile menu
     if (mobileMenuBtn && navList) {
-        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-        
-        // Закрытие меню по клику на подложку
-        mobileOverlay.addEventListener('click', closeMobileMenu);
-        
-        // Закрытие меню по клику на ссылки
+        mobileMenuBtn.addEventListener('click', function() {
+            navList.classList.toggle('active');
+            mobileMenuBtn.classList.toggle('active');
+            body.classList.toggle('no-scroll');
+            
+            // Change icon
+            const icon = mobileMenuBtn.querySelector('i');
+            if (navList.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+                header.style.backgroundColor = 'rgba(255, 255, 255, 0.98)';
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+
+        // Close menu when clicking on links
         const navLinks = document.querySelectorAll('.nav-list a');
         navLinks.forEach(link => {
-            link.addEventListener('click', closeMobileMenu);
-        });
-        
-        // Закрытие меню по клику на кнопку "Записаться" в меню
-        const appointmentBtn = document.querySelector('.nav-list a[href="#contact"]');
-        if (appointmentBtn) {
-            appointmentBtn.addEventListener('click', function(e) {
-                // Не закрываем меню сразу для кнопки "Записаться"
-                // так как она ведет к форме
+            link.addEventListener('click', () => {
+                navList.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
+                body.classList.remove('no-scroll');
+                const icon = mobileMenuBtn.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
             });
-        }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!navList.contains(e.target) && 
+                !mobileMenuBtn.contains(e.target) && 
+                navList.classList.contains('active')) {
+                navList.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
+                body.classList.remove('no-scroll');
+                const icon = mobileMenuBtn.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
     }
 
-    // ========== МОДАЛЬНОЕ ОКНО ==========
+    // Modal functionality
     const modal = document.getElementById('appointmentModal');
     const contactForm = document.getElementById('contactForm');
     const appointmentForm = document.getElementById('appointmentForm');
 
-    // Функция открытия модального окна
+    // Open modal
     window.openModal = function() {
         if (modal) {
             modal.style.display = 'flex';
             body.classList.add('no-scroll');
-            // Закрываем мобильное меню если оно открыто
-            closeMobileMenu();
         }
     };
 
-    // Функция закрытия модального окна
+    // Close modal
     window.closeModal = function() {
         if (modal) {
             modal.style.display = 'none';
@@ -94,24 +73,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Закрытие модального окна по клику вне его
+    // Close modal when clicking outside
     if (modal) {
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', (e) => {
             if (e.target === modal) {
-                closeModal();
-            }
-        });
-        
-        // Закрытие по Escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modal.style.display === 'flex') {
                 closeModal();
             }
         });
     }
 
-    // ========== ФОРМЫ ==========
-    // Отправка формы контактов
+    // Form submissions
     if (contactForm) {
         contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -119,7 +90,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Отправка формы записи
     if (appointmentForm) {
         appointmentForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -128,48 +98,52 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Общая функция отправки формы
     function submitForm(form, successMessage) {
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
-        const originalBgColor = submitBtn.style.backgroundColor;
         
-        // Показываем состояние загрузки
+        // Show loading state
         submitBtn.textContent = 'Отправка...';
         submitBtn.disabled = true;
         
-        // Симуляция отправки на сервер
+        // Simulate API call
         setTimeout(() => {
-            // Показываем успех
+            // Show success
             submitBtn.textContent = '✓ ' + successMessage;
             submitBtn.style.backgroundColor = '#4CAF50';
             
-            // Очищаем форму
+            // Reset form
             form.reset();
             
-            // Восстанавливаем кнопку через 3 секунды
+            // Reset button after 3 seconds
             setTimeout(() => {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
-                submitBtn.style.backgroundColor = originalBgColor;
+                submitBtn.style.backgroundColor = '';
             }, 3000);
         }, 1500);
     }
 
-    // ========== ПЛАВНАЯ ПРОКРУТКА ==========
+    // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            
             const targetId = this.getAttribute('href');
             if (targetId === '#') return;
             
             const targetElement = document.querySelector(targetId);
             if (targetElement) {
-                e.preventDefault();
+                // Close mobile menu if open
+                if (navList && navList.classList.contains('active')) {
+                    navList.classList.remove('active');
+                    mobileMenuBtn.classList.remove('active');
+                    body.classList.remove('no-scroll');
+                    const icon = mobileMenuBtn.querySelector('i');
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
                 
-                // Закрываем мобильное меню
-                closeMobileMenu();
-                
-                // Плавная прокрутка
                 window.scrollTo({
                     top: targetElement.offsetTop - 80,
                     behavior: 'smooth'
@@ -178,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ========== "ЛИПКИЙ" ХЕДЕР ==========
+    // Sticky header effect
     window.addEventListener('scroll', function() {
         if (window.scrollY > 100) {
             header.classList.add('scrolled');
@@ -187,132 +161,88 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // ========== ЛЕНИВАЯ ЗАГРУЗКА ИЗОБРАЖЕНИЙ ==========
+    // Gallery image lazy loading
     const galleryImages = document.querySelectorAll('.gallery-image');
-    
-    if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.style.opacity = '1';
-                    img.style.transform = 'translateY(0)';
-                    imageObserver.unobserve(img);
-                }
-            });
-        }, {
-            threshold: 0.1,
-            rootMargin: '50px'
-        });
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '50px'
+    };
 
-        galleryImages.forEach(img => {
-            img.style.opacity = '0';
-            img.style.transform = 'translateY(20px)';
-            img.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            imageObserver.observe(img);
-        });
-    }
-
-    // ========== АНИМАЦИЯ ПРИ СКРОЛЛЕ ==========
-    const animateElements = document.querySelectorAll('.feature, .category, .gallery-item, .contact-item');
-    
-    if ('IntersectionObserver' in window) {
-        const elementObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animated');
-                    elementObserver.unobserve(entry.target);
-                }
-            });
-        }, {
-            threshold: 0.1,
-            rootMargin: '50px'
-        });
-
-        animateElements.forEach(el => {
-            elementObserver.observe(el);
-        });
-    } else {
-        // Fallback для старых браузеров
-        animateElements.forEach(el => {
-            el.classList.add('animated');
-        });
-    }
-
-    // ========== ПРОВЕРКА ДАТЫ В ФОРМЕ ==========
-    const dateInput = document.querySelector('input[type="date"]');
-    if (dateInput) {
-        // Устанавливаем минимальную дату - сегодня
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.min = today;
-        
-        // Устанавливаем максимальную дату - +3 месяца от сегодня
-        const maxDate = new Date();
-        maxDate.setMonth(maxDate.getMonth() + 3);
-        dateInput.max = maxDate.toISOString().split('T')[0];
-    }
-
-    // ========== ВАЛИДАЦИЯ ТЕЛЕФОНА ==========
-    const phoneInputs = document.querySelectorAll('input[type="tel"]');
-    phoneInputs.forEach(input => {
-        input.addEventListener('input', function(e) {
-            // Удаляем все нецифровые символы
-            this.value = this.value.replace(/\D/g, '');
-            
-            // Форматируем номер
-            if (this.value.length > 0) {
-                let formattedValue = '+7 ';
-                
-                if (this.value.length > 1) {
-                    formattedValue += '(' + this.value.substring(1, 4);
-                }
-                if (this.value.length > 4) {
-                    formattedValue += ') ' + this.value.substring(4, 7);
-                }
-                if (this.value.length > 7) {
-                    formattedValue += '-' + this.value.substring(7, 9);
-                }
-                if (this.value.length > 9) {
-                    formattedValue += '-' + this.value.substring(9, 11);
-                }
-                
-                this.value = formattedValue;
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
             }
         });
+    }, observerOptions);
+
+    galleryImages.forEach(img => {
+        img.style.opacity = '0';
+        img.style.transform = 'translateY(20px)';
+        img.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(img);
     });
 
-    // ========== УСТАНОВКА ТЕКУЩЕГО ГОДА В ФУТЕРЕ ==========
-    const yearElement = document.querySelector('#current-year');
-    if (!yearElement) {
-        // Создаем элемент если его нет
-        const copyrightText = document.querySelector('.footer-copyright');
-        if (copyrightText) {
-            copyrightText.innerHTML = copyrightText.innerHTML.replace('2024', new Date().getFullYear());
-        }
-    } else {
-        yearElement.textContent = new Date().getFullYear();
-    }
-
-    // ========== КЛИК ПО ЛОГОТИПУ ==========
-    const logo = document.querySelector('.logo');
-    if (logo) {
-        logo.addEventListener('click', function(e) {
-            e.preventDefault();
-            closeMobileMenu();
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+    // Animate elements on scroll
+    const animateElements = document.querySelectorAll('.feature, .category, .gallery-item');
+    const animateObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animated');
+            }
         });
+    }, {
+        threshold: 0.1
+    });
+
+    animateElements.forEach(el => {
+        animateObserver.observe(el);
+    });
+
+    // Touch events for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    document.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+
+    function handleSwipe() {
+        if (navList && navList.classList.contains('active')) {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe left - close menu
+                    navList.classList.remove('active');
+                    mobileMenuBtn.classList.remove('active');
+                    body.classList.remove('no-scroll');
+                    const icon = mobileMenuBtn.querySelector('i');
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            }
+        }
     }
-});
 
-// ========== ОБРАБОТЧИК ОШИБОК ==========
-window.addEventListener('error', function(e) {
-    console.log('Произошла ошибка:', e.error);
-});
-
-// ========== ЗАГРУЗКА СТРАНИЦЫ ==========
-window.addEventListener('load', function() {
-    document.body.classList.add('loaded');
+    // Resize handler
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            if (navList && navList.classList.contains('active')) {
+                navList.classList.remove('active');
+                mobileMenuBtn.classList.remove('active');
+                body.classList.remove('no-scroll');
+                const icon = mobileMenuBtn.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        }
+    });
 });
